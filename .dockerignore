@@ -1,0 +1,26 @@
+# Version control
+.git
+.gitignore
+
+# Dependencies
+node_modules
+client/node_modules
+server/node_modules
+
+# Build artifacts
+dist
+client/dist
+server/dist
+
+# Tests and coverage
+client/test-results
+client/playwright-report
+server/data/*.db*
+coverage
+
+# Environment & IDE
+.env*
+.idea
+.vscode
+*.log
+Makefile

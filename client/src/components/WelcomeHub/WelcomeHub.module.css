@@ -1,0 +1,192 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 480px;
+  padding: 20px;
+  margin: 0 auto;
+  gap: 24px;
+  animation: fadeIn 0.4s ease-out;
+  overflow-y: auto;
+  max-height: calc(100vh - 80px);
+}
+
+.greetingBlock {
+  text-align: center;
+}
+
+.greetingTitle {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+}
+
+.greetingSubtitle {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 4px;
+}
+
+.historyCard {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--border-radius-card);
+  padding: 18px;
+  box-shadow: var(--card-shadow);
+}
+
+.historyHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.historyTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.weekGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.dayColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 4px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.dayColumnToday {
+  background: rgba(229, 57, 53, 0.2);
+  border-color: rgba(229, 57, 53, 0.6);
+  box-shadow: 0 0 12px rgba(229, 57, 53, 0.25);
+}
+
+.dayWeekday {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+}
+
+.dayDate {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 8px;
+}
+
+.dayTomatoBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.dayTomatoIcon {
+  font-size: 1.1rem;
+}
+
+.dayTomatoCount {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.dayEmpty {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.25);
+  margin: 6px 0;
+}
+
+.summaryRow {
+  margin-top: 14px;
+  display: flex;
+  justify-content: space-around;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.summaryItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.summaryValue {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.summaryLabel {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.startDayBtn {
+  width: 100%;
+  padding: 18px 24px;
+  background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%);
+  border: 3px solid #ffffff;
+  border-radius: var(--border-radius-pill);
+  color: #ffffff;
+  font-size: 1.2rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 0 12px 32px rgba(229, 57, 53, 0.4);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.startDayBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px rgba(229, 57, 53, 0.55);
+}
+
+.startDayBtn:active {
+  transform: scale(0.96);
+}
+
+.completedBadge {
+  background: rgba(46, 125, 50, 0.25);
+  border: 1px solid rgba(76, 175, 80, 0.5);
+  color: #a5d6a7;
+  padding: 10px 18px;
+  border-radius: var(--border-radius-pill);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

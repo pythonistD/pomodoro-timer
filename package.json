@@ -1,0 +1,16 @@
+{
+  "name": "pomodoro-timer-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix server run dev & npm --prefix client run dev",
+    "client:dev": "npm --prefix client run dev",
+    "client:build": "npm --prefix client run build",
+    "server:dev": "npm --prefix server run dev",
+    "server:build": "npm --prefix server run build",
+    "server:test": "npm --prefix server run test",
+    "server:smoke": "npm --prefix server run smoke",
+    "build": "npm --prefix server run build && npm --prefix client run build",
+    "test": "npm --prefix server run test && npm --prefix server run smoke"
+  }
+}

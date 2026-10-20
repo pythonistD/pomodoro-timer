@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  pomodoro-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pomodoro-timer:latest
+    container_name: pomodoro-app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_PATH=/app/data/pomodoro.db
+      - CLIENT_DIST_PATH=/app/client/dist
+    volumes:
+      - pomodoro-sqlite-data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  pomodoro-sqlite-data:
+    name: pomodoro-sqlite-data
