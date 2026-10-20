@@ -7,6 +7,8 @@ declare global {
   interface Window {
     Telegram?: {
       WebApp?: {
+        /** Подписанные данные инициализации: сервер проверяет их HMAC по токену бота. */
+        initData?: string;
         initDataUnsafe?: {
           user?: {
             id?: number;

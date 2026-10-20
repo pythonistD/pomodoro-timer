@@ -5,6 +5,12 @@ import { SessionRow } from '../db/schema.js';
 import { CreateSessionInput } from '../schemas/validation.js';
 import { logger } from '../utils/logger.js';
 
+/**
+ * Вход сервиса: userId обязателен. В схеме он опционален, потому что в
+ * продакшене приходит из проверенного Telegram initData, а не из тела запроса.
+ */
+type CreateSessionCommand = Omit<CreateSessionInput, 'userId'> & { userId: string };
+
 export interface FormattedSession {
   id: string;
   userId: string;
@@ -52,7 +58,7 @@ export class SessionService {
   /**
    * Save a completed or cancelled pomodoro work/break session
    */
-  createSession(input: CreateSessionInput): FormattedSession {
+  createSession(input: CreateSessionCommand): FormattedSession {
     const id = input.id || randomUUID();
     const startDate = new Date(input.startedAt);
 

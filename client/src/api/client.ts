@@ -45,8 +45,28 @@ const getTimezoneOffsetMin = (): number => {
   return new Date().getTimezoneOffset();
 };
 
+/**
+ * Подписанные данные инициализации Telegram Mini App.
+ * initData (в отличие от initDataUnsafe) сервер проверяет HMAC-подписью токена бота.
+ */
+const getInitData = (): string | undefined => {
+  if (typeof window === 'undefined') return undefined;
+  return window.Telegram?.WebApp?.initData;
+};
+
+const authHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const initData = getInitData();
+  if (initData) {
+    headers['X-Telegram-Init-Data'] = initData;
+  }
+  return headers;
+};
+
 export async function fetchSettings(userId: string): Promise<UserSettings> {
-  const res = await fetch(`/api/settings?userId=${encodeURIComponent(userId)}`);
+  const res = await fetch(`/api/settings?userId=${encodeURIComponent(userId)}`, {
+    headers: authHeaders(),
+  });
   const json = await res.json();
   if (!json.success) throw new Error(json.error || 'Failed to fetch settings');
   return json.data;
@@ -55,7 +75,7 @@ export async function fetchSettings(userId: string): Promise<UserSettings> {
 export async function updateSettings(settings: UserSettings): Promise<UserSettings> {
   const res = await fetch('/api/settings', {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify(settings),
   });
   const json = await res.json();
@@ -65,7 +85,8 @@ export async function updateSettings(settings: UserSettings): Promise<UserSettin
 
 export async function fetchTodayStats(userId: string): Promise<TodayStats> {
   const res = await fetch(
-    `/api/sessions/today?userId=${encodeURIComponent(userId)}&timezoneOffsetMin=${getTimezoneOffsetMin()}`
+    `/api/sessions/today?userId=${encodeURIComponent(userId)}&timezoneOffsetMin=${getTimezoneOffsetMin()}`,
+    { headers: authHeaders() }
   );
   const json = await res.json();
   if (!json.success) throw new Error(json.error || 'Failed to fetch today stats');
@@ -85,7 +106,7 @@ export async function recordSession(payload: {
 }): Promise<any> {
   const res = await fetch('/api/sessions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify(payload),
   });
   const json = await res.json();
@@ -95,7 +116,8 @@ export async function recordSession(payload: {
 
 export async function fetchWeeklySummary(userId: string): Promise<WeeklySummary> {
   const res = await fetch(
-    `/api/stats/summary?userId=${encodeURIComponent(userId)}&period=week&timezoneOffsetMin=${getTimezoneOffsetMin()}`
+    `/api/stats/summary?userId=${encodeURIComponent(userId)}&period=week&timezoneOffsetMin=${getTimezoneOffsetMin()}`,
+    { headers: authHeaders() }
   );
   const json = await res.json();
   if (!json.success) throw new Error(json.error || 'Failed to fetch weekly summary');
@@ -104,7 +126,8 @@ export async function fetchWeeklySummary(userId: string): Promise<WeeklySummary>
 
 export async function getDaySessionStatus(userId: string): Promise<DaySessionStatus> {
   const res = await fetch(
-    `/api/day-session/status?userId=${encodeURIComponent(userId)}&timezoneOffsetMin=${getTimezoneOffsetMin()}`
+    `/api/day-session/status?userId=${encodeURIComponent(userId)}&timezoneOffsetMin=${getTimezoneOffsetMin()}`,
+    { headers: authHeaders() }
   );
   const json = await res.json();
   if (!json.success) throw new Error(json.error || 'Failed to fetch day session status');
@@ -114,7 +137,7 @@ export async function getDaySessionStatus(userId: string): Promise<DaySessionSta
 export async function startDaySession(userId: string): Promise<DaySessionStatus> {
   const res = await fetch('/api/day-session/start', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify({ userId, timezoneOffsetMin: getTimezoneOffsetMin() }),
   });
   const json = await res.json();
@@ -125,7 +148,7 @@ export async function startDaySession(userId: string): Promise<DaySessionStatus>
 export async function completeDaySession(userId: string): Promise<DaySessionStatus> {
   const res = await fetch('/api/day-session/complete', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify({ userId, timezoneOffsetMin: getTimezoneOffsetMin() }),
   });
   const json = await res.json();

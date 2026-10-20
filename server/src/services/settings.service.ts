@@ -4,6 +4,12 @@ import { SettingsRow } from '../db/schema.js';
 import { UpdateSettingsInput } from '../schemas/validation.js';
 import { logger } from '../utils/logger.js';
 
+/**
+ * Вход сервиса: userId обязателен. В схеме он опционален, потому что в
+ * продакшене приходит из проверенного Telegram initData, а не из тела запроса.
+ */
+type UpdateSettingsCommand = Omit<UpdateSettingsInput, 'userId'> & { userId: string };
+
 export interface UserSettings {
   userId: string;
   workDurationMin: number;
@@ -60,7 +66,7 @@ export class SettingsService {
     };
   }
 
-  updateSettings(input: UpdateSettingsInput): UserSettings {
+  updateSettings(input: UpdateSettingsCommand): UserSettings {
     const now = new Date().toISOString();
     const upsertStmt = this.db.prepare(`
       INSERT INTO settings (

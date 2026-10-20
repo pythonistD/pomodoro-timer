@@ -1,13 +1,15 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { GetSettingsQuerySchema, UpdateSettingsSchema } from '../schemas/validation.js';
 import { settingsService } from '../services/settings.service.js';
+import { requireUserId } from '../middleware/telegram-auth.js';
 
 export const settingsRouter = Router();
 
 // GET /api/settings - Get settings for user
 settingsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { userId } = GetSettingsQuerySchema.parse(req.query);
+    const { userId: queryUserId } = GetSettingsQuerySchema.parse(req.query);
+    const userId = requireUserId(req, queryUserId);
     const settings = settingsService.getSettings(userId);
 
     res.json({
@@ -22,8 +24,9 @@ settingsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
 // PUT /api/settings - Update settings for user
 settingsRouter.put('/', (req: Request, res: Response, next: NextFunction) => {
   try {
-    const validatedData = UpdateSettingsSchema.parse(req.body);
-    const updatedSettings = settingsService.updateSettings(validatedData);
+    const { userId: bodyUserId, ...rest } = UpdateSettingsSchema.parse(req.body);
+    const userId = requireUserId(req, bodyUserId);
+    const updatedSettings = settingsService.updateSettings({ ...rest, userId });
 
     res.json({
       success: true,

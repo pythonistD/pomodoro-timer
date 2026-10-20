@@ -9,19 +9,25 @@ import { sessionsRouter } from './routes/sessions.js';
 import { statsRouter } from './routes/stats.js';
 import { settingsRouter } from './routes/settings.js';
 import { daySessionRouter } from './routes/day-session.js';
+import { telegramAuth } from './middleware/telegram-auth.js';
 
 export function createApp(): express.Application {
   const app = express();
 
-  // Basic security and parsing middleware
-  app.use(cors());
+  // Basic security and parsing middleware.
+  // CORS выключен по умолчанию: клиент и API отдаются с одного origin.
+  // Разрешить отдельный origin (например, dev-сервер Vite на :5173) — через CORS_ORIGIN.
+  const corsOrigin = process.env.CORS_ORIGIN?.trim();
+  app.use(cors(corsOrigin ? { origin: corsOrigin } : { origin: false }));
   app.use(express.json());
 
   // Logging middleware
   app.use(requestLogger);
 
-  // Mount API routers
+  // Mount API routers.
+  // Healthcheck публичный, все остальные API-роуты требуют валидный Telegram initData.
   app.use('/api/health', healthRouter);
+  app.use('/api', telegramAuth);
   app.use('/api/sessions', sessionsRouter);
   app.use('/api/stats', statsRouter);
   app.use('/api/settings', settingsRouter);
