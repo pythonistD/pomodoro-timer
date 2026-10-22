@@ -42,11 +42,11 @@ export function App() {
   // App Navigation & Session State
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('hub');
   const [timerMode, setTimerMode] = useState<TimerMode>('idle_work');
+  const [isPaused, setIsPaused] = useState(false);
   const [isDayCompleted, setIsDayCompleted] = useState(false);
 
   // Stats State
   const [todayCount, setTodayCount] = useState(0);
-  const [currentCycle, setCurrentCycle] = useState(1);
   const [totalFocusMinutesToday, setTotalFocusMinutesToday] = useState(0);
   const [weeklyBreakdown, setWeeklyBreakdown] = useState<DailyBreakdownItem[]>([]);
   const [weeklyFocusMinutes, setWeeklyFocusMinutes] = useState(0);
@@ -77,7 +77,6 @@ export function App() {
 
         setSettings(loadedSettings);
         setTodayCount(todayStats.todayCount);
-        setCurrentCycle(todayStats.currentCycleIndex || 1);
         setTotalFocusMinutesToday(todayStats.totalFocusMinutesToday);
 
         setWeeklyBreakdown(weeklyData.dailyBreakdown);
@@ -101,9 +100,12 @@ export function App() {
     loadData();
   }, [userId]);
 
-  // Determine current active break duration (long break on every 4th)
-  const isNextBreakLong = (todayCount + 1) % settings.longBreakInterval === 0;
-  const currentBreakDurationMin = isNextBreakLong ? settings.longBreakMin : settings.shortBreakMin;
+  // Derived cycle & break calculations:
+  // Break is long every 4th completed pomodoro (4, 8, 12, etc.)
+  const isBreakLong = todayCount > 0 && todayCount % settings.longBreakInterval === 0;
+  const currentBreakDurationMin = isBreakLong ? settings.longBreakMin : settings.shortBreakMin;
+  const currentWorkCycle = (todayCount % settings.longBreakInterval) + 1;
+  const currentBreakCycle = todayCount > 0 ? ((todayCount - 1) % settings.longBreakInterval) + 1 : 1;
 
   // 2. Timer Loop (Delta Time with Date.now() for accurate background handling)
   const handleSessionComplete = useCallback(async () => {
@@ -114,8 +116,12 @@ export function App() {
     soundManager.playCompletionChime(settings.soundEnabled);
     telegramService.hapticNotification('success', settings.vibrationEnabled);
 
+    setIsPaused(false);
+
     if (isWorkSession) {
       const newTodayCount = todayCount + 1;
+      const workCycleIndex = (todayCount % settings.longBreakInterval) + 1;
+
       setTodayCount(newTodayCount);
       setTotalFocusMinutesToday((prev) => prev + settings.workDurationMin);
 
@@ -132,26 +138,29 @@ export function App() {
           plannedDurationSec: settings.workDurationMin * 60,
           actualDurationSec: settings.workDurationMin * 60,
           status: 'completed',
-          cycleIndex: ((todayCount) % 4) + 1,
+          cycleIndex: workCycleIndex,
         });
       } catch (e) {
         console.warn('Session recording error:', e);
       }
     } else {
       // Break session completed -> Transition back to Red screen: idle_work
+      const breakWasLong = todayCount > 0 && todayCount % settings.longBreakInterval === 0;
+      const breakDuration = breakWasLong ? settings.longBreakMin : settings.shortBreakMin;
+      const breakCycleIndex = todayCount > 0 ? ((todayCount - 1) % settings.longBreakInterval) + 1 : 1;
+
       setTimerMode('idle_work');
-      setCurrentCycle((prev) => (prev % 4) + 1);
 
       try {
         await recordSession({
           userId,
-          type: isNextBreakLong ? 'long_break' : 'short_break',
+          type: breakWasLong ? 'long_break' : 'short_break',
           startedAt: startIso,
           endedAt: nowIso,
-          plannedDurationSec: currentBreakDurationMin * 60,
-          actualDurationSec: currentBreakDurationMin * 60,
+          plannedDurationSec: breakDuration * 60,
+          actualDurationSec: breakDuration * 60,
           status: 'completed',
-          cycleIndex: currentCycle,
+          cycleIndex: breakCycleIndex,
         });
       } catch (e) {
         console.warn('Break recording error:', e);
@@ -165,13 +174,21 @@ export function App() {
     settings,
     todayCount,
     userId,
-    isNextBreakLong,
-    currentBreakDurationMin,
-    currentCycle,
   ]);
 
+  // Dev & E2E Testing Hook
   useEffect(() => {
-    if (timerMode !== 'running_work' && timerMode !== 'running_break') {
+    (window as any).__POMODORO_DEBUG__ = {
+      setTimerMode,
+      setTodayCount,
+      setIsPaused,
+      setSecondsRemaining,
+      handleSessionComplete,
+    };
+  }, [handleSessionComplete]);
+
+  useEffect(() => {
+    if ((timerMode !== 'running_work' && timerMode !== 'running_break') || isPaused) {
       return;
     }
 
@@ -189,10 +206,11 @@ export function App() {
     }, 250);
 
     return () => clearInterval(interval);
-  }, [timerMode, handleSessionComplete]);
+  }, [timerMode, isPaused, handleSessionComplete]);
 
   // 3. Start Work Pomodoro
   const startWorkTimer = () => {
+    setIsPaused(false);
     const durationSec = settings.workDurationMin * 60;
     setTotalDurationSeconds(durationSec);
     setSecondsRemaining(durationSec);
@@ -207,6 +225,7 @@ export function App() {
 
   // 4. Start Break Timer
   const startBreakTimer = () => {
+    setIsPaused(false);
     const durationSec = currentBreakDurationMin * 60;
     setTotalDurationSeconds(durationSec);
     setSecondsRemaining(durationSec);
@@ -219,20 +238,33 @@ export function App() {
     setTimerMode('running_break');
   };
 
-  // 5. Cancel Active Timer
+  // 5. Toggle Pause / Resume
+  const togglePause = () => {
+    telegramService.hapticImpact('medium', settings.vibrationEnabled);
+    soundManager.playClickSound(settings.soundEnabled);
+
+    if (isPaused) {
+      // Resume from current secondsRemaining
+      targetEndTimeRef.current = Date.now() + secondsRemaining * 1000;
+      setIsPaused(false);
+    } else {
+      // Pause
+      targetEndTimeRef.current = null;
+      setIsPaused(true);
+    }
+  };
+
+  // 6. Cancel Active Timer
   const cancelActiveTimer = () => {
     telegramService.hapticImpact('light', settings.vibrationEnabled);
     targetEndTimeRef.current = null;
     sessionStartTimeRef.current = null;
+    setIsPaused(false);
 
-    if (timerMode === 'running_work') {
-      setTimerMode('idle_work');
-    } else {
-      setTimerMode('idle_work');
-    }
+    setTimerMode('idle_work');
   };
 
-  // 6. Day Session Actions
+  // 7. Day Session Actions
   const handleStartDaySession = async () => {
     telegramService.hapticImpact('heavy', settings.vibrationEnabled);
     soundManager.playClickSound(settings.soundEnabled);
@@ -244,6 +276,7 @@ export function App() {
     }
     setCurrentScreen('timer');
     setTimerMode('idle_work');
+    setIsPaused(false);
   };
 
   const handleEndDaySession = async () => {
@@ -272,7 +305,7 @@ export function App() {
     }
   };
 
-  // 7. Settings Toggles & Updates
+  // 8. Settings Toggles & Updates
   const handleToggleSound = async () => {
     const newSettings = { ...settings, soundEnabled: !settings.soundEnabled };
     setSettings(newSettings);
@@ -349,7 +382,9 @@ export function App() {
                 secondsRemaining={secondsRemaining}
                 totalDurationSeconds={totalDurationSeconds}
                 mode="work"
-                cycleIndex={currentCycle}
+                cycleIndex={currentWorkCycle}
+                isPaused={isPaused}
+                onTogglePause={togglePause}
                 onCancel={cancelActiveTimer}
               />
             )}
@@ -358,7 +393,7 @@ export function App() {
               <BreakPrompt
                 todayCount={todayCount}
                 breakDurationMin={currentBreakDurationMin}
-                isLongBreak={isNextBreakLong}
+                isLongBreak={isBreakLong}
                 onStartBreak={startBreakTimer}
               />
             )}
@@ -367,8 +402,10 @@ export function App() {
               <TimerDisplay
                 secondsRemaining={secondsRemaining}
                 totalDurationSeconds={totalDurationSeconds}
-                mode={isNextBreakLong ? 'long_break' : 'short_break'}
-                cycleIndex={currentCycle}
+                mode={isBreakLong ? 'long_break' : 'short_break'}
+                cycleIndex={currentBreakCycle}
+                isPaused={isPaused}
+                onTogglePause={togglePause}
                 onCancel={cancelActiveTimer}
               />
             )}

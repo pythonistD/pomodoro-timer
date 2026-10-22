@@ -1,5 +1,5 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { Pause, Play, RotateCcw } from 'lucide-react';
 import styles from './TimerDisplay.module.css';
 
 interface TimerDisplayProps {
@@ -7,6 +7,8 @@ interface TimerDisplayProps {
   totalDurationSeconds: number;
   mode: 'work' | 'short_break' | 'long_break';
   cycleIndex: number;
+  isPaused: boolean;
+  onTogglePause: () => void;
   onCancel: () => void;
 }
 
@@ -15,6 +17,8 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
   totalDurationSeconds,
   mode,
   cycleIndex,
+  isPaused,
+  onTogglePause,
   onCancel,
 }) => {
   const minutes = Math.floor(secondsRemaining / 60);
@@ -31,7 +35,7 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
 
   return (
     <div className={styles.container}>
-      <div className={styles.timerRingWrapper}>
+      <div className={`${styles.timerRingWrapper} ${isPaused ? styles.ringWrapperPaused : ''}`}>
         <svg className={styles.svgRing} viewBox="0 0 260 260">
           <circle
             className={styles.ringBackground}
@@ -40,7 +44,7 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
             r={radius}
           />
           <circle
-            className={styles.ringProgress}
+            className={`${styles.ringProgress} ${isPaused ? styles.progressPaused : ''}`}
             cx="130"
             cy="130"
             r={radius}
@@ -51,22 +55,44 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
 
         <div className={styles.centerContent}>
           <span className={styles.modeLabel}>{modeTitle}</span>
-          <span className={styles.timeString} id="timer-display-string">{formattedTime}</span>
-          {mode === 'work' && (
+          <span className={`${styles.timeString} ${isPaused ? styles.timePaused : ''}`} id="timer-display-string">
+            {formattedTime}
+          </span>
+          {isPaused ? (
+            <span className={styles.pausedBadge} id="timer-paused-badge">
+              ⏸ Пауза
+            </span>
+          ) : mode === 'work' ? (
             <span className={styles.cycleBadge}>Помидор {cycleIndex} из 4</span>
+          ) : (
+            <span className={styles.cycleBadge}>
+              {mode === 'long_break' ? 'Большой отдых' : 'Короткий отдых'}
+            </span>
           )}
         </div>
       </div>
 
-      <button
-        id="cancel-timer-btn"
-        className={styles.cancelBtn}
-        onClick={onCancel}
-        aria-label="Cancel Session"
-      >
-        <X size={18} />
-        <span>Сбросить</span>
-      </button>
+      <div className={styles.controlsRow}>
+        <button
+          id="toggle-pause-btn"
+          className={`${styles.actionBtn} ${isPaused ? styles.resumeBtn : styles.pauseBtn}`}
+          onClick={onTogglePause}
+          aria-label={isPaused ? 'Продолжить таймер' : 'Поставить таймер на паузу'}
+        >
+          {isPaused ? <Play size={20} fill="currentColor" /> : <Pause size={20} fill="currentColor" />}
+          <span>{isPaused ? 'Продолжить' : 'Пауза'}</span>
+        </button>
+
+        <button
+          id="cancel-timer-btn"
+          className={`${styles.actionBtn} ${styles.cancelBtn}`}
+          onClick={onCancel}
+          aria-label="Сбросить сессию"
+        >
+          <RotateCcw size={18} />
+          <span>Сбросить</span>
+        </button>
+      </div>
     </div>
   );
 };

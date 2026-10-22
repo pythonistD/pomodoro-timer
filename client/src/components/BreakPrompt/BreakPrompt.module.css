@@ -3,14 +3,26 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 24px;
-  max-width: 340px;
+  gap: 20px;
+  width: 100%;
+  max-width: 360px;
+  padding: 0 16px;
   text-align: center;
   animation: fadeIn 0.4s ease-out;
 }
 
+.titleWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .title {
-  font-size: 1.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 1.55rem;
   font-weight: 800;
   color: #ffffff;
   letter-spacing: -0.5px;
@@ -18,43 +30,95 @@
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
+.titleIcon {
+  color: #ffeb3b;
+  filter: drop-shadow(0 2px 8px rgba(255, 235, 59, 0.6));
+  flex-shrink: 0;
+}
+
 .statsCard {
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(14px);
   border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--border-radius-card);
-  padding: 16px 22px;
+  padding: 18px 20px;
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
-.todayDone {
-  font-size: 1.05rem;
+.sectionHeader {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 0.2px;
+}
+
+.tomatoesRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--border-radius-card);
+  width: 100%;
+  min-height: 52px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.tomatoIconItem {
+  font-size: 1.55rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35));
+  animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+.emptyTomatoes {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+.tomatoesCounter {
+  font-size: 1.15rem;
   font-weight: 700;
   color: #ffffff;
+  letter-spacing: 0.3px;
+  margin-top: 2px;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 4px 0;
 }
 
 .breakTypeInfo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-size: 1rem;
+  gap: 8px;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #c8e6c9;
 }
 
 .startBreakBtn {
   width: 100%;
-  padding: 18px 28px;
-  font-size: 1.25rem;
+  padding: 16px 24px;
+  font-size: 1.2rem;
   font-weight: 800;
   color: #ffffff;
   background: linear-gradient(180deg, #1e1e1e 0%, #0d0d0d 100%);
-  border: 4px solid #ffffff;
+  border: 3.5px solid #ffffff;
   border-radius: var(--border-radius-pill);
   box-shadow: 
     0 16px 36px rgba(0, 0, 0, 0.45),
@@ -75,6 +139,17 @@
 .startBreakBtn:active {
   transform: scale(0.96);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes fadeIn {

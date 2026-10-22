@@ -5,6 +5,7 @@
   justify-content: center;
   gap: 24px;
   animation: scaleIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  width: 100%;
 }
 
 .timerRingWrapper {
@@ -14,6 +15,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: opacity 0.3s ease;
+}
+
+.ringWrapperPaused {
+  opacity: 0.92;
 }
 
 .svgRing {
@@ -36,8 +42,13 @@
   stroke: #ffffff;
   stroke-width: 10px;
   stroke-linecap: round;
-  transition: stroke-dashoffset 0.8s linear;
+  transition: stroke-dashoffset 0.8s linear, stroke 0.3s ease;
   filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+}
+
+.progressPaused {
+  stroke: #ffe082;
+  filter: drop-shadow(0 0 10px rgba(255, 224, 130, 0.6));
 }
 
 .centerContent {
@@ -66,40 +77,118 @@
   line-height: 1;
   letter-spacing: -1px;
   text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: color 0.3s ease;
+}
+
+.timePaused {
+  color: #fff9c4;
 }
 
 .cycleBadge {
   margin-top: 8px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
-  background: rgba(0, 0, 0, 0.25);
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.3);
   padding: 4px 12px;
   border-radius: var(--border-radius-pill);
 }
 
-.cancelBtn {
+.pausedBadge {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffe082;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 224, 130, 0.5);
+  padding: 4px 14px;
+  border-radius: var(--border-radius-pill);
+  animation: pulseBadge 1.5s infinite ease-in-out;
+}
+
+.controlsRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.actionBtn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 10px 24px;
+  padding: 12px 22px;
+  border-radius: var(--border-radius-pill);
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pauseBtn {
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(12px);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.pauseBtn:hover {
+  background: rgba(255, 255, 255, 0.32);
+  transform: translateY(-2px);
+}
+
+.resumeBtn {
+  background: #ffffff;
+  color: #121212;
+  border: 2px solid #ffffff;
+  box-shadow: 0 8px 24px rgba(255, 255, 255, 0.35);
+  animation: pulseResume 1.8s infinite ease-in-out;
+}
+
+.resumeBtn:hover {
+  background: #f0f0f0;
+  transform: translateY(-2px);
+}
+
+.cancelBtn {
   background: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(10px);
   border: 1.5px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--border-radius-pill);
   color: rgba(255, 255, 255, 0.9);
-  font-weight: 600;
-  font-size: 0.95rem;
-  transition: all 0.2s ease;
 }
 
 .cancelBtn:hover {
   background: rgba(0, 0, 0, 0.5);
   color: #ffffff;
+  transform: translateY(-2px);
 }
 
-.cancelBtn:active {
-  transform: scale(0.95);
+.actionBtn:active {
+  transform: scale(0.94);
+}
+
+@keyframes pulseBadge {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes pulseResume {
+  0%, 100% {
+    box-shadow: 0 4px 16px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 8px 28px rgba(255, 255, 255, 0.6);
+  }
 }
 
 @keyframes scaleIn {
